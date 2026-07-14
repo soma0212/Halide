@@ -288,7 +288,11 @@ public:
             return result;
         } else {
             Expr idx = mutate(flatten_args(op->name, op->args, Buffer<>(), output_buf));
-            return Store::make(op->name, value, idx, output_buf, predicate, ModulusRemainder());
+            bool is_streaming = false;
+            if (auto it = env.find(op->name); it != env.end()) {
+                is_streaming = it->second.first.schedule().stream_stores();
+            }
+            return Store::make(op->name, value, idx, output_buf, predicate, ModulusRemainder(), is_streaming);
         }
     }
 
@@ -338,8 +342,12 @@ public:
                                   op->param);
             } else {
                 Expr idx = mutate(flatten_args(op->name, op->args, op->image, op->param));
+                bool is_streaming = op->param.defined() && op->param.is_streaming_loads();
+                if (auto it = env.find(op->name); it != env.end()) {
+                    is_streaming |= it->second.first.schedule().stream_loads();
+                }
                 return Load::make(op->type, op->name, idx, op->image, op->param,
-                                  const_true(op->type.lanes()), ModulusRemainder());
+                                  const_true(op->type.lanes()), ModulusRemainder(), is_streaming);
             }
 
         } else {
@@ -592,7 +600,7 @@ protected:
         if (t != op->type) {
             return Cast::make(op->type,
                               Load::make(t, op->name, mutate(op->index),
-                                         op->image, op->param, mutate(op->predicate), ModulusRemainder()));
+                                         op->image, op->param, mutate(op->predicate), ModulusRemainder(), op->is_streaming));
         } else {
             return IRMutator::visit(op);
         }
@@ -602,7 +610,7 @@ protected:
         Type t = upgrade(op->value.type());
         if (t != op->value.type()) {
             return Store::make(op->name, Cast::make(t, mutate(op->value)), mutate(op->index),
-                               op->param, mutate(op->predicate), ModulusRemainder());
+                               op->param, mutate(op->predicate), ModulusRemainder(), op->is_streaming);
         } else {
             return IRMutator::visit(op);
         }

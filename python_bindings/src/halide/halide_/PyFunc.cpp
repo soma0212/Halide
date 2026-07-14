@@ -228,6 +228,8 @@ void define_func(py::module &m) {
             .def("hoist_storage_root", &Func::hoist_storage_root)
 
             .def("store_in", &Func::store_in, py::arg("memory_type"))
+            .def("stream_loads", &Func::stream_loads)
+            .def("stream_stores", &Func::stream_stores)
 
             .def("compile_to",  //
                  [](Func &f, const std::map<OutputFileType, std::string> &output_files, const std::vector<Argument> &args, const std::string &fn_name, const Target &target) {

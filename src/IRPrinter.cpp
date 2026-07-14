@@ -996,6 +996,9 @@ void IRPrinter::visit(const Load *op) {
     if (has_pred) {
         open();
     }
+    if (op->is_streaming) {
+        stream << kw("streaming ");
+    }
     if (!known_type.contains(op->name)) {
         stream << typep(op->type);
     }
@@ -1205,6 +1208,9 @@ void IRPrinter::visit(const Store *op) {
         stream << kw(")\n");
         indent++;
         stream << get_indent();
+    }
+    if (op->is_streaming) {
+        stream << kw("streaming ");
     }
     stream << buf(op->name) << paren("[");
     print_no_parens(op->index);

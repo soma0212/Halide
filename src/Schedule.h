@@ -613,6 +613,15 @@ public:
     bool &async();
     bool async() const;
 
+    /** True if accesses to this Function's backing storage should use
+     * non-temporal (streaming) loads or stores. */
+    // @{
+    bool &stream_loads();
+    bool stream_loads() const;
+    bool &stream_stores();
+    bool stream_stores() const;
+    // @}
+
     Expr &ring_buffer();
     Expr &ring_buffer() const;
 

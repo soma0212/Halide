@@ -1102,7 +1102,7 @@ protected:
         } else {
             return Load::make(op->type, op->name, std::move(index),
                               op->image, op->param, std::move(predicate),
-                              op->alignment);
+                              op->alignment, op->is_streaming);
         }
     }
 
@@ -1114,7 +1114,7 @@ protected:
         if (predicate.same_as(op->predicate) && value.same_as(op->value) && index.same_as(op->index)) {
             return op;
         } else {
-            return Store::make(op->name, std::move(value), std::move(index), op->param, std::move(predicate), op->alignment);
+            return Store::make(op->name, std::move(value), std::move(index), op->param, std::move(predicate), op->alignment, op->is_streaming);
         }
     }
 };

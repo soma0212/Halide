@@ -22,6 +22,7 @@ struct ParameterContents {
     const bool is_buffer;
     MemoryType memory_type = MemoryType::Auto;
     bool trace_loads{false};
+    bool stream_loads{false};
     std::vector<std::string> trace_tags;
 
     ParameterContents(Type t, bool b, int d, const std::string &n)
@@ -86,12 +87,13 @@ Parameter::Parameter(const Type &t, bool is_buffer, int d, const std::string &na
 
 Parameter::Parameter(const Type &t, int dimensions, const std::string &name,
                      const Buffer<void> &buffer, int host_alignment, const std::vector<BufferConstraint> &buffer_constraints,
-                     MemoryType memory_type)
+                     MemoryType memory_type, bool stream_loads)
     : contents(new Internal::ParameterContents(t, /*is_buffer*/ true, dimensions, name)) {
     contents->buffer = buffer;
     contents->host_alignment = host_alignment;
     contents->buffer_constraints = buffer_constraints;
     contents->memory_type = memory_type;
+    contents->stream_loads = stream_loads;
 }
 
 Parameter::Parameter(const Type &t, int dimensions, const std::string &name,
@@ -480,6 +482,16 @@ void Parameter::trace_loads() {
 
 bool Parameter::is_tracing_loads() const {
     return contents->trace_loads;
+}
+
+void Parameter::stream_loads() {
+    check_is_buffer();
+    contents->stream_loads = true;
+}
+
+bool Parameter::is_streaming_loads() const {
+    check_is_buffer();
+    return contents->stream_loads;
 }
 
 void Parameter::add_trace_tag(const std::string &trace_tag) {

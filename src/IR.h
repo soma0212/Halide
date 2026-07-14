@@ -309,11 +309,15 @@ struct Load : public ExprNode<Load> {
     // the alignment of the first lane.
     ModulusRemainder alignment;
 
+    // Whether this access should bypass the cache when supported by the target.
+    bool is_streaming;
+
     static Expr make(Type type, const std::string &name,
                      Expr index, Buffer<> image,
                      Parameter param,
                      Expr predicate,
-                     ModulusRemainder alignment);
+                     ModulusRemainder alignment,
+                     bool is_streaming = false);
 
     static const IRNodeType _node_type = IRNodeType::Load;
 };
@@ -427,8 +431,12 @@ struct Store : public StmtNode<Store> {
     // the alignment of the first lane.
     ModulusRemainder alignment;
 
+    // Whether this access should bypass the cache when supported by the target.
+    bool is_streaming;
+
     static Stmt make(const std::string &name, Expr value, Expr index,
-                     Parameter param, Expr predicate, ModulusRemainder alignment);
+                     Parameter param, Expr predicate, ModulusRemainder alignment,
+                     bool is_streaming = false);
 
     static const IRNodeType _node_type = IRNodeType::Store;
 };

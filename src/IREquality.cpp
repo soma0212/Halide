@@ -380,6 +380,7 @@ struct Comparer {
             case IRNodeType::Load:
                 cmp(&Load::name);
                 cmp(&Load::alignment);
+                cmp(&Load::is_streaming);
                 cmp(&Load::index);
                 cmp(&Load::predicate);
                 break;
@@ -437,6 +438,7 @@ struct Comparer {
             case IRNodeType::Store:
                 cmp(&Store::name);
                 cmp(&Store::alignment);
+                cmp(&Store::is_streaming);
                 cmp(&Store::predicate);
                 cmp(&Store::value);
                 cmp(&Store::index);

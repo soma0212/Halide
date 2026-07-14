@@ -88,6 +88,10 @@ void ImageParam::trace_loads() {
     param.trace_loads();
 }
 
+void ImageParam::stream_loads() {
+    param.stream_loads();
+}
+
 ImageParam &ImageParam::add_trace_tag(const std::string &trace_tag) {
     param.add_trace_tag(trace_tag);
     return *this;

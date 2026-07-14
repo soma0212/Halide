@@ -2602,6 +2602,16 @@ public:
      * on MemoryType for more detail. */
     Func &store_in(MemoryType memory_type);
 
+    /** Use non-temporal (streaming) loads for accesses to this Func's
+     * backing storage. This is a hint to keep data that is only read once
+     * from displacing reusable data from the cache. */
+    Func &stream_loads();
+
+    /** Use non-temporal (streaming) stores for writes to this Func's
+     * backing storage. On targets that require it, Halide emits a fence
+     * before returning from code that performs streaming stores. */
+    Func &stream_stores();
+
     /** Trace all loads from this Func by emitting calls to
      * halide_trace. If the Func is inlined, this has no
      * effect. */

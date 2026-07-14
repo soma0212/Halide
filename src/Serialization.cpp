@@ -474,7 +474,8 @@ std::pair<Serialize::Stmt, Offset<void>> Serializer::serialize_stmt(FlatBufferBu
                                                      predicate_serialized.first, predicate_serialized.second,
                                                      value_serialized.first, value_serialized.second,
                                                      index_serialized.first, index_serialized.second,
-                                                     param_name_serialized, alignment_serialized)
+                                                     param_name_serialized, alignment_serialized,
+                                                     store_stmt->is_streaming)
                                   .Union());
     }
     case IRNodeType::Provide: {
@@ -841,7 +842,8 @@ std::pair<Serialize::Expr, Offset<void>> Serializer::serialize_expr(FlatBufferBu
                                                     predicate_serialized.first, predicate_serialized.second,
                                                     index_serialized.first, index_serialized.second,
                                                     image_name_serialized, param_name_serialized,
-                                                    alignment_serialized, type_serialized)
+                                                    alignment_serialized, type_serialized,
+                                                    load_expr->is_streaming)
                                   .Union());
     }
     case IRNodeType::Ramp: {
@@ -1116,6 +1118,8 @@ Offset<Serialize::FuncSchedule> Serializer::serialize_func_schedule(FlatBufferBu
     const Serialize::MemoryType memory_type = serialize_memory_type(func_schedule.memory_type());
     const auto memoized = func_schedule.memoized();
     const auto async = func_schedule.async();
+    const auto stream_loads = func_schedule.stream_loads();
+    const auto stream_stores = func_schedule.stream_stores();
     const auto ring_buffer = serialize_expr(builder, func_schedule.ring_buffer());
     const auto memoize_eviction_key_serialized = serialize_expr(builder, func_schedule.memoize_eviction_key());
     return Serialize::CreateFuncSchedule(builder, store_level_serialized, compute_level_serialized,
@@ -1124,8 +1128,10 @@ Offset<Serialize::FuncSchedule> Serializer::serialize_func_schedule(FlatBufferBu
                                          builder.CreateVector(bounds_serialized),
                                          builder.CreateVector(estimates_serialized),
                                          builder.CreateVector(wrappers_serialized),
-                                         memory_type, memoized, async, ring_buffer.first, ring_buffer.second,
-                                         memoize_eviction_key_serialized.first, memoize_eviction_key_serialized.second);
+                                         memory_type, memoized, async,
+                                         ring_buffer.first, ring_buffer.second,
+                                         memoize_eviction_key_serialized.first, memoize_eviction_key_serialized.second,
+                                         stream_loads, stream_stores);
 }
 
 Offset<Serialize::Specialization> Serializer::serialize_specialization(FlatBufferBuilder &builder, const Specialization &specialization) {
@@ -1337,8 +1343,11 @@ Offset<Serialize::Parameter> Serializer::serialize_parameter(FlatBufferBuilder &
             buffer_constraints_serialized.push_back(serialize_buffer_constraint(builder, buffer_constraint));
         }
         const auto memory_type_serialized = serialize_memory_type(parameter.memory_type());
+        const bool stream_loads = parameter.is_streaming_loads();
         return Serialize::CreateParameter(builder, defined, is_buffer, type_serialized, dimensions, name_serialized, host_alignment,
-                                          builder.CreateVector(buffer_constraints_serialized), memory_type_serialized);
+                                          builder.CreateVector(buffer_constraints_serialized), memory_type_serialized, std::nullopt,
+                                          Serialize::Expr::NONE, 0, Serialize::Expr::NONE, 0,
+                                          Serialize::Expr::NONE, 0, Serialize::Expr::NONE, 0, stream_loads);
     } else {
         static_assert(FLATBUFFERS_USE_STD_OPTIONAL);
         const auto make_optional_u64 = [](const std::optional<halide_scalar_value_t> &v) -> std::optional<uint64_t> {
@@ -1356,7 +1365,7 @@ Offset<Serialize::Parameter> Serializer::serialize_parameter(FlatBufferBuilder &
                                           scalar_default_serialized.first, scalar_default_serialized.second,
                                           scalar_min_serialized.first, scalar_min_serialized.second,
                                           scalar_max_serialized.first, scalar_max_serialized.second,
-                                          scalar_estimate_serialized.first, scalar_estimate_serialized.second);
+                                          scalar_estimate_serialized.first, scalar_estimate_serialized.second, false);
     }
 }
 

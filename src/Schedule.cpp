@@ -241,6 +241,8 @@ struct FuncScheduleContents {
     MemoryType memory_type = MemoryType::Auto;
     bool memoized = false;
     bool async = false;
+    bool stream_loads = false;
+    bool stream_stores = false;
     // This is an extent of the ring buffer and expected to be a positive integer.
     Expr ring_buffer;
     Expr memoize_eviction_key;
@@ -364,6 +366,8 @@ FuncSchedule FuncSchedule::deep_copy(
     copy.contents->memoized = contents->memoized;
     copy.contents->memoize_eviction_key = contents->memoize_eviction_key;
     copy.contents->async = contents->async;
+    copy.contents->stream_loads = contents->stream_loads;
+    copy.contents->stream_stores = contents->stream_stores;
     copy.contents->ring_buffer = contents->ring_buffer;
 
     // Deep-copy wrapper functions.
@@ -406,6 +410,22 @@ bool &FuncSchedule::async() {
 
 bool FuncSchedule::async() const {
     return contents->async;
+}
+
+bool &FuncSchedule::stream_loads() {
+    return contents->stream_loads;
+}
+
+bool FuncSchedule::stream_loads() const {
+    return contents->stream_loads;
+}
+
+bool &FuncSchedule::stream_stores() {
+    return contents->stream_stores;
+}
+
+bool FuncSchedule::stream_stores() const {
+    return contents->stream_stores;
 }
 
 Expr &FuncSchedule::ring_buffer() {

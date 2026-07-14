@@ -22,7 +22,27 @@ public:
     void add_tests() override {
         if (target.arch == Target::ARM) {
             check_neon_all();
+            check_streaming_accesses();
         }
+    }
+
+    void check_streaming_accesses() {
+        if (target.bits != 64) {
+            return;
+        }
+
+        auto streaming_copy = [&]() {
+            Func f;
+            f(x, y) = in_u8(x);
+            f.compute_root()
+                .vectorize(x, 32)
+                .stream_loads()
+                .stream_stores();
+            return f(x, y);
+        };
+
+        check("ldnp q", 32, streaming_copy());
+        check("stnp q", 32, streaming_copy());
     }
 
     void check_neon_all() {

@@ -128,7 +128,7 @@ Expr IRMutator::visit(const Load *op) {
     }
     return Load::make(op->type, op->name, std::move(index),
                       op->image, op->param, std::move(predicate),
-                      op->alignment);
+                      op->alignment, op->is_streaming);
 }
 
 Expr IRMutator::visit(const Ramp *op) {
@@ -216,7 +216,7 @@ Stmt IRMutator::visit(const Store *op) {
     if (predicate.same_as(op->predicate) && value.same_as(op->value) && index.same_as(op->index)) {
         return op;
     }
-    return Store::make(op->name, std::move(value), std::move(index), op->param, std::move(predicate), op->alignment);
+    return Store::make(op->name, std::move(value), std::move(index), op->param, std::move(predicate), op->alignment, op->is_streaming);
 }
 
 Stmt IRMutator::visit(const Provide *op) {

@@ -564,7 +564,7 @@ Stmt Deserializer::deserialize_stmt(Serialize::Stmt type_code, const void *stmt)
             user_error << "unknown parameter used in pipeline '" << param_name << "'\n";
         }
         const auto alignment = deserialize_modulus_remainder(store_stmt->alignment());
-        return Store::make(name, value, index, param, predicate, alignment);
+        return Store::make(name, value, index, param, predicate, alignment, store_stmt->is_streaming());
     }
     case Serialize::Stmt::Provide: {
         const auto *provide_stmt = (const Serialize::Provide *)stmt;
@@ -832,7 +832,7 @@ Expr Deserializer::deserialize_expr(Serialize::Expr type_code, const void *expr)
         }
         const auto alignment = deserialize_modulus_remainder(load_expr->alignment());
         const auto type = deserialize_type(load_expr->type());
-        return Load::make(type, name, index, image, param, predicate, alignment);
+        return Load::make(type, name, index, image, param, predicate, alignment, load_expr->is_streaming());
     }
     case Serialize::Expr::Ramp: {
         const auto *ramp_expr = (const Serialize::Ramp *)expr;
@@ -1015,6 +1015,8 @@ FuncSchedule Deserializer::deserialize_func_schedule(const Serialize::FuncSchedu
     const auto memory_type = deserialize_memory_type(func_schedule->memory_type());
     const auto memoized = func_schedule->memoized();
     const auto async = func_schedule->async();
+    const auto stream_loads = func_schedule->stream_loads();
+    const auto stream_stores = func_schedule->stream_stores();
     const auto ring_buffer = deserialize_expr(func_schedule->ring_buffer_type(), func_schedule->ring_buffer());
     const auto memoize_eviction_key = deserialize_expr(func_schedule->memoize_eviction_key_type(), func_schedule->memoize_eviction_key());
     auto hl_func_schedule = FuncSchedule();
@@ -1028,6 +1030,8 @@ FuncSchedule Deserializer::deserialize_func_schedule(const Serialize::FuncSchedu
     hl_func_schedule.memory_type() = memory_type;
     hl_func_schedule.memoized() = memoized;
     hl_func_schedule.async() = async;
+    hl_func_schedule.stream_loads() = stream_loads;
+    hl_func_schedule.stream_stores() = stream_stores;
     hl_func_schedule.ring_buffer() = ring_buffer;
     hl_func_schedule.memoize_eviction_key() = memoize_eviction_key;
     return hl_func_schedule;
@@ -1234,7 +1238,8 @@ Parameter Deserializer::deserialize_parameter(const Serialize::Parameter *parame
             deserialize_vector<Serialize::BufferConstraint, BufferConstraint>(parameter->buffer_constraints(),
                                                                               &Deserializer::deserialize_buffer_constraint);
         const auto memory_type = deserialize_memory_type(parameter->memory_type());
-        return Parameter(type, dimensions, name, Buffer<>(), host_alignment, buffer_constraints, memory_type);
+        const bool stream_loads = parameter->stream_loads();
+        return Parameter(type, dimensions, name, Buffer<>(), host_alignment, buffer_constraints, memory_type, stream_loads);
     } else {
         static_assert(FLATBUFFERS_USE_STD_OPTIONAL);
         const auto make_optional_halide_scalar_value_t = [](const std::optional<uint64_t> &v) -> std::optional<halide_scalar_value_t> {

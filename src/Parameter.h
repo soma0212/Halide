@@ -77,7 +77,7 @@ protected:
     /** Construct a new buffer parameter via deserialization. */
     Parameter(const Type &t, int dimensions, const std::string &name,
               const Buffer<void> &buffer, int host_alignment, const std::vector<BufferConstraint> &buffer_constraints,
-              MemoryType memory_type);
+              MemoryType memory_type, bool stream_loads);
 
     /** Construct a new scalar parameter via deserialization. */
     Parameter(const Type &t, int dimensions, const std::string &name,
@@ -222,6 +222,9 @@ public:
 
     void trace_loads();
     bool is_tracing_loads() const;
+
+    void stream_loads();
+    bool is_streaming_loads() const;
 
     void add_trace_tag(const std::string &trace_tag);
     std::vector<std::string> get_trace_tags() const;

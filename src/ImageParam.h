@@ -131,6 +131,9 @@ public:
     /** Trace all loads from this ImageParam by emitting calls to halide_trace. */
     void trace_loads();
 
+    /** Use non-temporal (streaming) loads for accesses to this ImageParam. */
+    void stream_loads();
+
     /** Add a trace tag to this ImageParam's Func. */
     ImageParam &add_trace_tag(const std::string &trace_tag);
 };

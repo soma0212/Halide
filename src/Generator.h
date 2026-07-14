@@ -1818,6 +1818,7 @@ public:
     HALIDE_FORWARD_METHOD_CONST(ImageParam, height)
     HALIDE_FORWARD_METHOD_CONST(ImageParam, channels)
     HALIDE_FORWARD_METHOD_CONST(ImageParam, trace_loads)
+    HALIDE_FORWARD_METHOD_CONST(ImageParam, stream_loads)
     HALIDE_FORWARD_METHOD_CONST(ImageParam, add_trace_tag)
     HALIDE_FORWARD_METHOD_CONST(ImageParam, type)
     // }@

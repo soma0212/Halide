@@ -2451,6 +2451,18 @@ Func &Func::store_in(MemoryType t) {
     return *this;
 }
 
+Func &Func::stream_loads() {
+    invalidate_cache();
+    func.schedule().stream_loads() = true;
+    return *this;
+}
+
+Func &Func::stream_stores() {
+    invalidate_cache();
+    func.schedule().stream_stores() = true;
+    return *this;
+}
+
 Func &Func::async() {
     invalidate_cache();
     func.schedule().async() = true;
